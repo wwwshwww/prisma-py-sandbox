@@ -1,0 +1,39 @@
+[project]
+name = "prisma-py-sandbox"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "wwwshwww", email = "www.shinderu.www@gmail.com" }
+]
+dependencies = [
+    "prisma>=0.13.1",
+    "mypy>=1.10.0",
+    "pyright>=1.1.363",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[project.scripts]
+"prisma-py-sandbox" = "prisma_py_sandbox:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prisma_py_sandbox"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["prisma_py_sandbox"]
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true

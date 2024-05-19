@@ -1,0 +1,41 @@
+version: '3'
+
+# for local development
+
+vars:
+  DB_NETWORK_NAME: 
+    sh: echo $DB_NETWORK_NAME
+  DB_NAME: 
+    sh: echo $DB_NAME
+  DB_PORT:
+    sh: echo $DB_PORT
+  DB_SCHEMA_PATH:
+    sh: echo $(pwd)/tools/postgres/schema.sql
+  DB_SERVICE_NAME: prisma-py-sandbox-db
+  SQLDEF_IMAGE_TAG: psqldef-runner
+
+tasks:
+  # test:run:
+  #   desc: pytest-xdist でテストを並列実行
+  #   cmds:
+  #     - python -m pytest -n auto
+
+  sqldef:build:
+    cmds:
+      - docker build -t {{.SQLDEF_IMAGE_TAG}} --no-cache ./tools/sqldef 
+  
+  db:up:
+    cmds:
+      - docker compose -f "./tools/postgres/docker-compose-local.yml" up -d --build
+  db:down:
+    cmds:
+      - docker compose -f "./tools/postgres/docker-compose-local.yml" down
+  db:dump:
+    cmds:
+      - docker run --rm -it --add-host=host.docker.internal:host-gateway {{.SQLDEF_IMAGE_TAG}} sh -c "psqldef -h host.docker.internal -p {{.DB_PORT}} -U root -W root {{.DB_NAME}} --export"
+  db:dryrun:
+    cmds:
+      - docker run --rm -it --add-host=host.docker.internal:host-gateway -v {{.DB_SCHEMA_PATH}}:/schema.sql {{.SQLDEF_IMAGE_TAG}} sh -c "psqldef -h host.docker.internal -p {{.DB_PORT}} -U root -W root {{.DB_NAME}} --dry-run --enable-drop-table < schema.sql"
+  db:apply:
+    cmds:
+      - docker run --rm -it --add-host=host.docker.internal:host-gateway -v {{.DB_SCHEMA_PATH}}:/schema.sql {{.SQLDEF_IMAGE_TAG}} sh -c "psqldef -h host.docker.internal -p {{.DB_PORT}} -U root -W root {{.DB_NAME}} --enable-drop-table < schema.sql"
